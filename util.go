@@ -7,14 +7,12 @@ import (
 	"image/jpeg"
 	_ "image/jpeg"
 	"image/png"
-	"io/ioutil"
 	"math"
 	"os"
 	"strings"
 
-	"github.com/golang/freetype/truetype"
-
 	"golang.org/x/image/font"
+	"golang.org/x/image/font/opentype"
 	"golang.org/x/image/math/fixed"
 )
 
@@ -130,17 +128,21 @@ func unfix(x fixed.Int26_6) float64 {
 // You can usually just use the Context.LoadFontFace function instead of
 // this package-level function.
 func LoadFontFace(path string, points float64) (font.Face, error) {
-	fontBytes, err := ioutil.ReadFile(path)
+	fontBytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
-	f, err := truetype.Parse(fontBytes)
+	f, err := opentype.Parse(fontBytes)
 	if err != nil {
 		return nil, err
 	}
-	face := truetype.NewFace(f, &truetype.Options{
+	face, err := opentype.NewFace(f, &opentype.FaceOptions{
 		Size: points,
+		DPI:  72,
 		// Hinting: font.HintingFull,
 	})
+	if err != nil {
+		return nil, err
+	}
 	return face, nil
 }

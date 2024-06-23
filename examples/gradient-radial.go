@@ -3,7 +3,7 @@ package main
 import (
 	"image/color"
 
-	"github.com/fogleman/gg"
+	"github.com/photostorm/gg"
 )
 
 func main() {

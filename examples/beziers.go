@@ -3,7 +3,7 @@ package main
 import (
 	"math/rand"
 
-	"github.com/fogleman/gg"
+	"github.com/photostorm/gg"
 )
 
 func random() float64 {
