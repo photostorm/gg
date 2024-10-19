@@ -127,7 +127,7 @@ func unfix(x fixed.Int26_6) float64 {
 // are not thread safe and cannot be used in parallel across goroutines.
 // You can usually just use the Context.LoadFontFace function instead of
 // this package-level function.
-func LoadFontFace(path string, points float64) (font.Face, error) {
+func LoadFontFace(path string, dpi float64, points float64) (font.Face, error) {
 	fontBytes, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -138,8 +138,8 @@ func LoadFontFace(path string, points float64) (font.Face, error) {
 	}
 	face, err := opentype.NewFace(f, &opentype.FaceOptions{
 		Size: points,
-		DPI:  72,
-		Hinting: font.HintingNone,
+		DPI:  dpi,
+		Hinting: font.HintingFull,
 	})
 	if err != nil {
 		return nil, err
