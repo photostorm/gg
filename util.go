@@ -139,7 +139,7 @@ func LoadFontFace(path string, points float64) (font.Face, error) {
 	face, err := opentype.NewFace(f, &opentype.FaceOptions{
 		Size: points,
 		DPI:  72,
-		// Hinting: font.HintingFull,
+		Hinting: font.HintingNone,
 	})
 	if err != nil {
 		return nil, err
