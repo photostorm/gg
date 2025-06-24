@@ -707,7 +707,7 @@ func (dc *Context) FontHeight() float64 {
 	return dc.fontHeight
 }
 
-func (dc *Context) drawString(im *image.RGBA, s string, x, y float64) {
+func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer draw.Transformer) {
 	d := &font.Drawer{
 		Dst:  im,
 		Src:  image.NewUniform(dc.color),
@@ -728,7 +728,7 @@ func (dc *Context) drawString(im *image.RGBA, s string, x, y float64) {
 			continue
 		}
 		sr := dr.Sub(dr.Min)
-		transformer := draw.BiLinear
+
 		fx, fy := float64(dr.Min.X), float64(dr.Min.Y)
 		m := dc.matrix.Translate(fx, fy)
 		s2d := f64.Aff3{m.XX, m.XY, m.X0, m.YX, m.YY, m.Y0}
@@ -742,22 +742,22 @@ func (dc *Context) drawString(im *image.RGBA, s string, x, y float64) {
 }
 
 // DrawString draws the specified text at the specified point.
-func (dc *Context) DrawString(s string, x, y float64) {
-	dc.DrawStringAnchored(s, x, y, 0, 0)
+func (dc *Context) DrawString(s string, x, y float64, transformer draw.Transformer) {
+	dc.DrawStringAnchored(s, x, y, 0, 0, transformer)
 }
 
 // DrawStringAnchored draws the specified text at the specified anchor point.
 // The anchor point is x - w * ax, y - h * ay, where w, h is the size of the
 // text. Use ax=0.5, ay=0.5 to center the text at the specified point.
-func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64) {
+func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64, transformer draw.Transformer) {
 	w, h := dc.MeasureString(s)
 	x -= ax * w
 	y += ay * h
 	if dc.mask == nil {
-		dc.drawString(dc.im, s, x, y)
+		dc.drawString(dc.im, s, x, y, transformer)
 	} else {
 		im := image.NewRGBA(image.Rect(0, 0, dc.width, dc.height))
-		dc.drawString(im, s, x, y)
+		dc.drawString(im, s, x, y, transformer)
 		draw.DrawMask(dc.im, dc.im.Bounds(), im, image.ZP, dc.mask, image.ZP, draw.Over)
 	}
 }
@@ -765,7 +765,7 @@ func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64) {
 // DrawStringWrapped word-wraps the specified string to the given max width
 // and then draws it at the specified anchor point using the given line
 // spacing and text alignment.
-func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align) {
+func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align, transformer draw.Transformer) {
 	lines := dc.WordWrap(s, width)
 
 	// sync h formula with MeasureMultilineString
@@ -786,7 +786,7 @@ func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing 
 	}
 	ay = 1
 	for _, line := range lines {
-		dc.DrawStringAnchored(line, x, y, ax, ay)
+		dc.DrawStringAnchored(line, x, y, ax, ay, transformer)
 		y += dc.fontHeight * lineSpacing
 	}
 }

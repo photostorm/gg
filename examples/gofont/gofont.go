@@ -5,6 +5,7 @@ import (
 
 	"github.com/golang/freetype/truetype"
 	"github.com/photostorm/gg"
+	"golang.org/x/image/draw"
 	"golang.org/x/image/font/gofont/goregular"
 )
 
@@ -21,6 +22,6 @@ func main() {
 	dc.SetRGB(1, 1, 1)
 	dc.Clear()
 	dc.SetRGB(0, 0, 0)
-	dc.DrawStringAnchored("Hello, world!", 512, 512, 0.5, 0.5)
+	dc.DrawStringAnchored("Hello, world!", 512, 512, 0.5, 0.5, draw.BiLinear)
 	dc.SavePNG("out.png")
 }
