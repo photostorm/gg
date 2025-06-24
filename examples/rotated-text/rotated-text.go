@@ -26,6 +26,6 @@ func main() {
 	dc.Rotate(gg.Radians(10))
 	dc.DrawRectangle(100, 180, w, h)
 	dc.Stroke()
-	dc.DrawStringAnchored(text, 100, 180, 0.0, 0.0, draw.BiLinear)
+	dc.DrawStringAnchored(text, 100, 180, 0.0, 0.0, draw.BiLinear, nil)
 	dc.SavePNG("out.png")
 }

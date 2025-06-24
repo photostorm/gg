@@ -24,10 +24,10 @@ func main() {
 			}
 			x := S/2 + float64(dx)
 			y := S/2 + float64(dy)
-			dc.DrawStringAnchored(s, x, y, 0.5, 0.5, draw.BiLinear)
+			dc.DrawStringAnchored(s, x, y, 0.5, 0.5, draw.BiLinear, nil)
 		}
 	}
 	dc.SetRGB(1, 1, 1)
-	dc.DrawStringAnchored(s, S/2, S/2, 0.5, 0.5, draw.BiLinear)
+	dc.DrawStringAnchored(s, S/2, S/2, 0.5, 0.5, draw.BiLinear, nil)
 	dc.SavePNG("out.png")
 }

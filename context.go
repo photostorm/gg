@@ -707,13 +707,25 @@ func (dc *Context) FontHeight() float64 {
 	return dc.fontHeight
 }
 
-func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer draw.Transformer) {
+func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer draw.Transformer, palette []color.Color) {
+	var dst draw.Image
+	bounds := im.Bounds()
+
+	if len(palette) > 0 {
+		// Render text to a clean black/white Paletted image
+		paletted := image.NewPaletted(bounds, palette)
+		dst = paletted
+	} else {
+		dst = im
+	}
+
 	d := &font.Drawer{
-		Dst:  im,
+		Dst:  dst,
 		Src:  image.NewUniform(dc.color),
 		Face: dc.fontFace,
 		Dot:  fixp(x, y),
 	}
+
 	// based on Drawer.DrawString() in golang.org/x/image/font/font.go
 	prevC := rune(-1)
 	for _, c := range s {
@@ -739,25 +751,29 @@ func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer
 		d.Dot.X += advance
 		prevC = c
 	}
+
+	if len(palette) > 0 {
+		draw.Draw(im, bounds, dst, image.Point{}, draw.Over)
+	}
 }
 
 // DrawString draws the specified text at the specified point.
-func (dc *Context) DrawString(s string, x, y float64, transformer draw.Transformer) {
-	dc.DrawStringAnchored(s, x, y, 0, 0, transformer)
+func (dc *Context) DrawString(s string, x, y float64, transformer draw.Transformer, palette []color.Color) {
+	dc.DrawStringAnchored(s, x, y, 0, 0, transformer, palette)
 }
 
 // DrawStringAnchored draws the specified text at the specified anchor point.
 // The anchor point is x - w * ax, y - h * ay, where w, h is the size of the
 // text. Use ax=0.5, ay=0.5 to center the text at the specified point.
-func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64, transformer draw.Transformer) {
+func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64, transformer draw.Transformer, palette []color.Color) {
 	w, h := dc.MeasureString(s)
 	x -= ax * w
 	y += ay * h
 	if dc.mask == nil {
-		dc.drawString(dc.im, s, x, y, transformer)
+		dc.drawString(dc.im, s, x, y, transformer, palette)
 	} else {
 		im := image.NewRGBA(image.Rect(0, 0, dc.width, dc.height))
-		dc.drawString(im, s, x, y, transformer)
+		dc.drawString(im, s, x, y, transformer, palette)
 		draw.DrawMask(dc.im, dc.im.Bounds(), im, image.ZP, dc.mask, image.ZP, draw.Over)
 	}
 }
@@ -765,7 +781,7 @@ func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64, transforme
 // DrawStringWrapped word-wraps the specified string to the given max width
 // and then draws it at the specified anchor point using the given line
 // spacing and text alignment.
-func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align, transformer draw.Transformer) {
+func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align, transformer draw.Transformer, palette []color.Color) {
 	lines := dc.WordWrap(s, width)
 
 	// sync h formula with MeasureMultilineString
@@ -786,7 +802,7 @@ func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing 
 	}
 	ay = 1
 	for _, line := range lines {
-		dc.DrawStringAnchored(line, x, y, ax, ay, transformer)
+		dc.DrawStringAnchored(line, x, y, ax, ay, transformer, palette)
 		y += dc.fontHeight * lineSpacing
 	}
 }

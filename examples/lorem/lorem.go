@@ -25,7 +25,7 @@ func main() {
 	const h = 24
 	for i, line := range lines {
 		y := H/2 - h*len(lines)/2 + i*h
-		dc.DrawStringAnchored(line, 400, float64(y), 0.5, 0.5, draw.BiLinear)
+		dc.DrawStringAnchored(line, 400, float64(y), 0.5, 0.5, draw.BiLinear, nil)
 	}
 	dc.SavePNG("out.png")
 }

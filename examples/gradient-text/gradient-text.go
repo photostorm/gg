@@ -18,7 +18,7 @@ func main() {
 	// draw text
 	dc.SetRGB(0, 0, 0)
 	dc.LoadFontFace("/Library/Fonts/Impact.ttf", 96, 128)
-	dc.DrawStringAnchored("Gradient Text", W/2, H/2, 0.5, 0.5, draw.BiLinear)
+	dc.DrawStringAnchored("Gradient Text", W/2, H/2, 0.5, 0.5, draw.BiLinear, nil)
 
 	// get the context as an alpha mask
 	mask := dc.AsMask()
