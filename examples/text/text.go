@@ -8,7 +8,7 @@ func main() {
 	dc.SetRGB(1, 1, 1)
 	dc.Clear()
 	dc.SetRGB(0, 0, 0)
-	if err := dc.LoadFontFace("/Library/Fonts/Arial.ttf", 96); err != nil {
+	if err := dc.LoadFontFace("/Library/Fonts/Arial.ttf", 96, 96); err != nil {
 		panic(err)
 	}
 	dc.DrawStringAnchored("Hello, world!", S/2, S/2, 0.5, 0.5)

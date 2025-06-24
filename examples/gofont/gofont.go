@@ -17,7 +17,7 @@ func main() {
 	face := truetype.NewFace(font, &truetype.Options{Size: 48})
 
 	dc := gg.NewContext(1024, 1024)
-	dc.SetFontFace(face)
+	dc.SetFontFace(face, 96)
 	dc.SetRGB(1, 1, 1)
 	dc.Clear()
 	dc.SetRGB(0, 0, 0)

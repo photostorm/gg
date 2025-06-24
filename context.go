@@ -689,16 +689,16 @@ func (dc *Context) DrawImageAnchored(im image.Image, x, y int, ax, ay float64) {
 
 // Text Functions
 
-func (dc *Context) SetFontFace(fontFace font.Face) {
+func (dc *Context) SetFontFace(fontFace font.Face, dpi float64) {
 	dc.fontFace = fontFace
-	dc.fontHeight = (float64(fontFace.Metrics().Height) / 64) * 72 / 96
+	dc.fontHeight = (float64(fontFace.Metrics().Height) / 64) * 72 / dpi
 }
 
 func (dc *Context) LoadFontFace(path string, dpi float64, points float64) error {
 	face, err := LoadFontFace(path, dpi, points)
 	if err == nil {
 		dc.fontFace = face
-		dc.fontHeight = (float64(face.Metrics().Height) / 64) * 72 / 96
+		dc.fontHeight = (float64(face.Metrics().Height) / 64) * 72 / dpi
 	}
 	return err
 }

@@ -19,7 +19,7 @@ func main() {
 	face := truetype.NewFace(font, &truetype.Options{
 		Size: 40,
 	})
-	dc.SetFontFace(face)
+	dc.SetFontFace(face, 96)
 	text := "Hello, world!"
 	w, h := dc.MeasureString(text)
 	dc.Rotate(gg.Radians(10))

@@ -10,7 +10,7 @@ func main() {
 	dc.SetRGB(1, 1, 1)
 	dc.Clear()
 	dc.SetRGB(0, 0, 0)
-	if err := dc.LoadFontFace("Xolonium-Regular.ttf", F); err != nil {
+	if err := dc.LoadFontFace("Xolonium-Regular.ttf", 96, F); err != nil {
 		panic(err)
 	}
 	for r := 0; r < 256; r++ {
