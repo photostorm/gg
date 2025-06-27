@@ -711,9 +711,6 @@ func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer
 	var dst draw.Image
 	bounds := im.Bounds()
 
-	metrics := dc.fontFace.Metrics()
-	ascent := float64(metrics.Ascent) / 64.0
-
 	if len(palette) > 0 {
 		// Render text to a clean black/white Paletted image
 		paletted := image.NewPaletted(bounds, palette)
@@ -726,7 +723,7 @@ func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer
 		Dst:  dst,
 		Src:  image.NewUniform(dc.color),
 		Face: dc.fontFace,
-		Dot:  fixPoint(x, y+ascent, alignToPixels),
+		Dot:  fixPoint(x, y, alignToPixels),
 	}
 
 	// based on Drawer.DrawString() in golang.org/x/image/font/font.go
