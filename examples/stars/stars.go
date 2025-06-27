@@ -42,7 +42,7 @@ func main() {
 		}
 		dc.SetLineWidth(10)
 		dc.SetHexColor("#FFCC00")
-		dc.StrokePreserve()
+		dc.StrokePreserve(false)
 		dc.SetHexColor("#FFE43A")
 		dc.Fill()
 		dc.Pop()

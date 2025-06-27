@@ -25,7 +25,7 @@ func main() {
 		dc.SetRGBA(r, g, b, a)
 		dc.SetLineWidth(w)
 		dc.DrawLine(x1, y1, x2, y2)
-		dc.Stroke()
+		dc.Stroke(false)
 	}
 	dc.SavePNG("out.png")
 }

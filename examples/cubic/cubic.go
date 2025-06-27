@@ -23,7 +23,7 @@ func main() {
 	dc.FillPreserve()
 	dc.SetRGB(0, 0, 0)
 	dc.SetDash(16, 24)
-	dc.Stroke()
+	dc.Stroke(false)
 
 	dc.MoveTo(x0, y0)
 	dc.LineTo(x1, y1)
@@ -32,7 +32,7 @@ func main() {
 	dc.SetRGBA(1, 0, 0, 0.4)
 	dc.SetLineWidth(2)
 	dc.SetDash(4, 8, 1, 8)
-	dc.Stroke()
+	dc.Stroke(false)
 
 	dc.SavePNG("out.png")
 }

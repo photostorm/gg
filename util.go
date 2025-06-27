@@ -102,12 +102,18 @@ func parseHexColor(x string) (r, g, b, a int) {
 	return
 }
 
-func fixp(x, y float64) fixed.Point26_6 {
-	return fixed.Point26_6{fix(x), fix(y)}
+func fixPoint(x, y float64, align bool) fixed.Point26_6 {
+	return fixed.Point26_6{
+		X: fixPos(x, align),
+		Y: fixPos(y, align),
+	}
 }
 
-func fix(x float64) fixed.Int26_6 {
-	return fixed.Int26_6(math.Round(x * 64))
+func fixPos(x float64, alignToPixels bool) fixed.Int26_6 {
+	if alignToPixels {
+		return fixed.I(int(x + 0.5)) // round to nearest pixel
+	}
+	return fixed.Int26_6(math.Round(x * 64)) // keep subpixel for LCD
 }
 
 func unfix(x fixed.Int26_6) float64 {

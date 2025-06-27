@@ -23,9 +23,9 @@ func main() {
 	dc.FillPreserve()
 	dc.SetRGB(1, 1, 1)
 	dc.SetLineWidth(8)
-	dc.StrokePreserve()
+	dc.StrokePreserve(false)
 	dc.SetRGB(1, 0, 0)
 	dc.SetLineWidth(4)
-	dc.StrokePreserve()
+	dc.StrokePreserve(false)
 	dc.SavePNG("out.png")
 }

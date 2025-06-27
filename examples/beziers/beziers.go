@@ -19,13 +19,13 @@ func drawCurve(dc *gg.Context) {
 	dc.FillPreserve()
 	dc.SetRGB(0, 0, 0)
 	dc.SetLineWidth(12)
-	dc.Stroke()
+	dc.Stroke(false)
 }
 
 func drawPoints(dc *gg.Context) {
 	dc.SetRGBA(1, 0, 0, 0.5)
 	dc.SetLineWidth(2)
-	dc.Stroke()
+	dc.Stroke(false)
 }
 
 func randomQuadratic(dc *gg.Context) {

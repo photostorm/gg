@@ -406,7 +406,7 @@ func (dc *Context) joiner() raster.Joiner {
 	return nil
 }
 
-func (dc *Context) stroke(painter raster.Painter) {
+func (dc *Context) stroke(painter raster.Painter, alignToPixels bool) {
 	path := dc.strokePath
 	if len(dc.dashes) > 0 {
 		path = dashed(path, dc.dashes, dc.dashOffset)
@@ -418,7 +418,7 @@ func (dc *Context) stroke(painter raster.Painter) {
 	r := dc.rasterizer
 	r.UseNonZeroWinding = true
 	r.Clear()
-	r.AddStroke(path, fix(dc.lineWidth), dc.capper(), dc.joiner())
+	r.AddStroke(path, fixPos(dc.lineWidth, alignToPixels), dc.capper(), dc.joiner())
 	r.Rasterize(painter)
 }
 
@@ -439,7 +439,7 @@ func (dc *Context) fill(painter raster.Painter) {
 // StrokePreserve strokes the current path with the current color, line width,
 // line cap, line join and dash settings. The path is preserved after this
 // operation.
-func (dc *Context) StrokePreserve() {
+func (dc *Context) StrokePreserve(alignToPixels bool) {
 	var painter raster.Painter
 	if dc.mask == nil {
 		if pattern, ok := dc.strokePattern.(*solidPattern); ok {
@@ -453,14 +453,14 @@ func (dc *Context) StrokePreserve() {
 	if painter == nil {
 		painter = newPatternPainter(dc.im, dc.mask, dc.strokePattern)
 	}
-	dc.stroke(painter)
+	dc.stroke(painter, alignToPixels)
 }
 
 // Stroke strokes the current path with the current color, line width,
 // line cap, line join and dash settings. The path is cleared after this
 // operation.
-func (dc *Context) Stroke() {
-	dc.StrokePreserve()
+func (dc *Context) Stroke(alignToPixels bool) {
+	dc.StrokePreserve(alignToPixels)
 	dc.ClearPath()
 }
 
@@ -707,9 +707,12 @@ func (dc *Context) FontHeight() float64 {
 	return dc.fontHeight
 }
 
-func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer draw.Transformer, palette []color.Color) {
+func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer draw.Transformer, palette []color.Color, alignToPixels bool) {
 	var dst draw.Image
 	bounds := im.Bounds()
+
+	metrics := dc.fontFace.Metrics()
+	ascent := float64(metrics.Ascent) / 64.0
 
 	if len(palette) > 0 {
 		// Render text to a clean black/white Paletted image
@@ -723,7 +726,7 @@ func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer
 		Dst:  dst,
 		Src:  image.NewUniform(dc.color),
 		Face: dc.fontFace,
-		Dot:  fixp(x, y),
+		Dot:  fixPoint(x, y+ascent, alignToPixels),
 	}
 
 	// based on Drawer.DrawString() in golang.org/x/image/font/font.go
@@ -758,22 +761,22 @@ func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer
 }
 
 // DrawString draws the specified text at the specified point.
-func (dc *Context) DrawString(s string, x, y float64, transformer draw.Transformer, palette []color.Color) {
-	dc.DrawStringAnchored(s, x, y, 0, 0, transformer, palette)
+func (dc *Context) DrawString(s string, x, y float64, transformer draw.Transformer, palette []color.Color, alignToPixels bool) {
+	dc.DrawStringAnchored(s, x, y, 0, 0, transformer, palette, alignToPixels)
 }
 
 // DrawStringAnchored draws the specified text at the specified anchor point.
 // The anchor point is x - w * ax, y - h * ay, where w, h is the size of the
 // text. Use ax=0.5, ay=0.5 to center the text at the specified point.
-func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64, transformer draw.Transformer, palette []color.Color) {
+func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64, transformer draw.Transformer, palette []color.Color, alignToPixels bool) {
 	w, h := dc.MeasureString(s)
 	x -= ax * w
 	y += ay * h
 	if dc.mask == nil {
-		dc.drawString(dc.im, s, x, y, transformer, palette)
+		dc.drawString(dc.im, s, x, y, transformer, palette, alignToPixels)
 	} else {
 		im := image.NewRGBA(image.Rect(0, 0, dc.width, dc.height))
-		dc.drawString(im, s, x, y, transformer, palette)
+		dc.drawString(im, s, x, y, transformer, palette, alignToPixels)
 		draw.DrawMask(dc.im, dc.im.Bounds(), im, image.ZP, dc.mask, image.ZP, draw.Over)
 	}
 }
@@ -781,7 +784,7 @@ func (dc *Context) DrawStringAnchored(s string, x, y, ax, ay float64, transforme
 // DrawStringWrapped word-wraps the specified string to the given max width
 // and then draws it at the specified anchor point using the given line
 // spacing and text alignment.
-func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align, transformer draw.Transformer, palette []color.Color) {
+func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing float64, align Align, transformer draw.Transformer, palette []color.Color, alignToPixels bool) {
 	lines := dc.WordWrap(s, width)
 
 	// sync h formula with MeasureMultilineString
@@ -802,7 +805,7 @@ func (dc *Context) DrawStringWrapped(s string, x, y, ax, ay, width, lineSpacing 
 	}
 	ay = 1
 	for _, line := range lines {
-		dc.DrawStringAnchored(line, x, y, ax, ay, transformer, palette)
+		dc.DrawStringAnchored(line, x, y, ax, ay, transformer, palette, alignToPixels)
 		y += dc.fontHeight * lineSpacing
 	}
 }

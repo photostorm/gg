@@ -24,6 +24,6 @@ func main() {
 	dc.FillPreserve()
 	dc.SetHexColor("#19344180")
 	dc.SetLineWidth(8)
-	dc.Stroke()
+	dc.Stroke(false)
 	dc.SavePNG("out.png")
 }

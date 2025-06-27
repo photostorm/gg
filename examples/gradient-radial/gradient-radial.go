@@ -19,9 +19,9 @@ func main() {
 
 	dc.SetColor(color.White)
 	dc.DrawCircle(100, 100, 10)
-	dc.Stroke()
+	dc.Stroke(false)
 	dc.DrawCircle(100, 120, 80)
-	dc.Stroke()
+	dc.Stroke(false)
 
 	dc.SavePNG("out.png")
 }

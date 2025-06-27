@@ -22,6 +22,6 @@ func main() {
 	dc.SetRGB(1, 1, 1)
 	dc.Clear()
 	dc.SetRGB(0, 0, 0)
-	dc.DrawStringAnchored("Hello, world!", 512, 512, 0.5, 0.5, draw.BiLinear, nil)
+	dc.DrawStringAnchored("Hello, world!", 512, 512, 0.5, 0.5, draw.BiLinear, nil, false)
 	dc.SavePNG("out.png")
 }

@@ -37,7 +37,7 @@ func main() {
 	}
 	dc.SetRGBA(0, 0, 0, 0.25)
 	dc.SetLineWidth(1)
-	dc.Stroke()
+	dc.Stroke(false)
 	// draw axes
 	dc.MoveTo(0, 0)
 	dc.LineTo(1, 0)
@@ -45,7 +45,7 @@ func main() {
 	dc.LineTo(0, 1)
 	dc.SetRGB(0, 0, 0)
 	dc.SetLineWidth(4)
-	dc.Stroke()
+	dc.Stroke(false)
 	// draw points
 	dc.SetRGBA(0, 0, 1, 0.5)
 	for _, p := range points {
@@ -58,10 +58,10 @@ func main() {
 	if err := dc.LoadFontFace("/Library/Fonts/Arial Bold.ttf", 96, 24); err != nil {
 		panic(err)
 	}
-	dc.DrawStringAnchored("Chart Title", S/2, P/2, 0.5, 0.5, draw.BiLinear, nil)
+	dc.DrawStringAnchored("Chart Title", S/2, P/2, 0.5, 0.5, draw.BiLinear, nil, false)
 	if err := dc.LoadFontFace("/Library/Fonts/Arial.ttf", 96, 18); err != nil {
 		panic(err)
 	}
-	dc.DrawStringAnchored("X Axis Title", S/2, S-P/2, 0.5, 0.5, draw.BiLinear, nil)
+	dc.DrawStringAnchored("X Axis Title", S/2, S-P/2, 0.5, 0.5, draw.BiLinear, nil, false)
 	dc.SavePNG("out.png")
 }

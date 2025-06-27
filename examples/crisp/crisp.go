@@ -25,7 +25,7 @@ func main() {
 	}
 	dc.SetLineWidth(1)
 	dc.SetRGBA(0, 0, 0, 0.25)
-	dc.Stroke()
+	dc.Stroke(false)
 
 	// major grid
 	for x := Major; x < W; x += Major {
@@ -38,7 +38,7 @@ func main() {
 	}
 	dc.SetLineWidth(1)
 	dc.SetRGBA(0, 0, 0, 0.5)
-	dc.Stroke()
+	dc.Stroke(false)
 
 	dc.SavePNG("out.png")
 }

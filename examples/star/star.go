@@ -35,6 +35,6 @@ func main() {
 	dc.FillPreserve()
 	dc.SetRGBA(0, 1, 0, 0.5)
 	dc.SetLineWidth(16)
-	dc.Stroke()
+	dc.Stroke(false)
 	dc.SavePNG("out.png")
 }

@@ -12,7 +12,7 @@ func main() {
 		x := float64(i)
 		dc.DrawLine(x+50, 0, x-50, 1000)
 		dc.SetLineWidth(w)
-		dc.Stroke()
+		dc.Stroke(false)
 		w += 0.1
 	}
 	dc.SavePNG("out.png")

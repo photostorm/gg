@@ -27,7 +27,7 @@ func main() {
 	dc.LineTo(x4, y4)
 	dc.SetHexColor("FF2D00")
 	dc.SetLineWidth(8)
-	dc.Stroke()
+	dc.Stroke(false)
 
 	dc.MoveTo(x0, y0)
 	dc.QuadraticTo(x1, y1, x2, y2)
@@ -36,7 +36,7 @@ func main() {
 	dc.SetLineWidth(16)
 	dc.FillPreserve()
 	dc.SetRGB(0, 0, 0)
-	dc.Stroke()
+	dc.Stroke(false)
 
 	dc.DrawCircle(x0, y0, 0.5)
 	dc.DrawCircle(x1, y1, 0.5)
@@ -47,11 +47,11 @@ func main() {
 	dc.FillPreserve()
 	dc.SetRGB(0, 0, 0)
 	dc.SetLineWidth(4)
-	dc.Stroke()
+	dc.Stroke(false)
 
 	dc.LoadFontFace("/Library/Fonts/Arial.ttf", 96, 200)
-	dc.DrawStringAnchored("g", -5, 5, 0.5, 0.5, draw.BiLinear, nil)
-	dc.DrawStringAnchored("G", 5, -5, 0.5, 0.5, draw.BiLinear, nil)
+	dc.DrawStringAnchored("g", -5, 5, 0.5, 0.5, draw.BiLinear, nil, false)
+	dc.DrawStringAnchored("G", 5, -5, 0.5, 0.5, draw.BiLinear, nil, false)
 
 	dc.SavePNG("out.png")
 }

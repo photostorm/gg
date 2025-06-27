@@ -16,7 +16,7 @@ func main() {
 
 	dc.SetColor(color.White)
 	dc.DrawRectangle(20, 20, 400-20, 300)
-	dc.Stroke()
+	dc.Stroke(false)
 
 	dc.SetStrokeStyle(grad)
 	dc.SetLineWidth(4)
@@ -25,7 +25,7 @@ func main() {
 	dc.LineTo(410, 100)
 	dc.LineTo(10, 100)
 	dc.ClosePath()
-	dc.Stroke()
+	dc.Stroke(false)
 
 	dc.SetFillStyle(grad)
 	dc.MoveTo(10, 120)
