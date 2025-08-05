@@ -783,7 +783,15 @@ func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer
 		}
 		sr := dr.Sub(dr.Min)
 
-		fx, fy := float64(dr.Min.X), float64(dr.Min.Y)
+		var fx, fy float64
+		if alignToPixels {
+			fx = float64(dr.Min.X / 64) // round to nearest pixel
+			fy = float64(dr.Min.Y / 64)
+		} else {
+			fx = float64(dr.Min.X)
+			fy = float64(dr.Min.Y)
+		}
+
 		m := dc.matrix.Translate(fx, fy)
 		s2d := f64.Aff3{m.XX, m.XY, m.X0, m.YX, m.YY, m.Y0}
 		transformer.Transform(d.Dst, s2d, d.Src, sr, transformerDrawOp, &draw.Options{
