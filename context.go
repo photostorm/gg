@@ -18,6 +18,8 @@ import (
 	"golang.org/x/image/math/f64"
 )
 
+type FontRenderPreProcessor func(bounds image.Rectangle) draw.Image
+
 type FontRenderPostProcessor func(src image.Image, bounds image.Rectangle) (image.Image, draw.Op)
 
 type LineCap int
@@ -79,6 +81,7 @@ type Context struct {
 	fontHeight          float64
 	matrix              Matrix
 	stack               []*Context
+	fontPreProcessFunc  FontRenderPreProcessor
 	fontPostProcessFunc FontRenderPostProcessor
 }
 
@@ -509,6 +512,14 @@ func (dc *Context) ClipPreserve() {
 	}
 }
 
+func (dc *Context) SetFontPreProcessFunc(fontPreProcessFunc FontRenderPreProcessor) {
+	dc.fontPreProcessFunc = fontPreProcessFunc
+}
+
+func (dc *Context) ClearFontPreProcessFunc() {
+	dc.fontPreProcessFunc = nil
+}
+
 func (dc *Context) SetFontPostProcessFunc(fontPostProcessFunc FontRenderPostProcessor) {
 	dc.fontPostProcessFunc = fontPostProcessFunc
 }
@@ -741,7 +752,13 @@ func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer
 	bounds := im.Bounds()
 
 	// Always draw to an intermediate RGBA image
-	dst := image.NewRGBA(bounds)
+	var dst draw.Image
+
+	if dc.fontPreProcessFunc != nil {
+		dst = dc.fontPreProcessFunc(bounds)
+	} else {
+		dst = image.NewRGBA(bounds)
+	}
 
 	d := &font.Drawer{
 		Dst:  dst,
