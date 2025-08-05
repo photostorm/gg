@@ -18,7 +18,7 @@ import (
 	"golang.org/x/image/math/f64"
 )
 
-type FontRenderPreProcessor func(bounds image.Rectangle) draw.Image
+type FontRenderPreProcessor func(bounds image.Rectangle) (draw.Image, draw.Op)
 
 type FontRenderPostProcessor func(src image.Image, bounds image.Rectangle) (image.Image, draw.Op)
 
@@ -752,10 +752,11 @@ func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer
 	bounds := im.Bounds()
 
 	// Always draw to an intermediate RGBA image
+	var transformerDrawOp = draw.Over
 	var dst draw.Image
 
 	if dc.fontPreProcessFunc != nil {
-		dst = dc.fontPreProcessFunc(bounds)
+		dst, transformerDrawOp = dc.fontPreProcessFunc(bounds)
 	} else {
 		dst = image.NewRGBA(bounds)
 	}
@@ -785,7 +786,7 @@ func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer
 		fx, fy := float64(dr.Min.X), float64(dr.Min.Y)
 		m := dc.matrix.Translate(fx, fy)
 		s2d := f64.Aff3{m.XX, m.XY, m.X0, m.YX, m.YY, m.Y0}
-		transformer.Transform(d.Dst, s2d, d.Src, sr, draw.Over, &draw.Options{
+		transformer.Transform(d.Dst, s2d, d.Src, sr, transformerDrawOp, &draw.Options{
 			SrcMask:  mask,
 			SrcMaskP: maskp,
 		})
