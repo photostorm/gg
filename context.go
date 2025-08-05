@@ -784,9 +784,10 @@ func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer
 		sr := dr.Sub(dr.Min)
 
 		var fx, fy float64
+		
 		if alignToPixels {
-			fx = float64(dr.Min.X / 64) // round to nearest pixel
-			fy = float64(dr.Min.Y / 64)
+			fx = math.Round(float64(dr.Min.X))
+			fy = math.Round(float64(dr.Min.Y))
 		} else {
 			fx = float64(dr.Min.X)
 			fy = float64(dr.Min.Y)
