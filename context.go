@@ -707,17 +707,32 @@ func (dc *Context) FontHeight() float64 {
 	return dc.fontHeight
 }
 
+func findClosestPaletteIndex(target color.Color, palette []color.Color) uint8 {
+	tr, tg, tb, _ := target.RGBA()
+	best := uint8(0)
+	bestDist := uint32(1<<32 - 1)
+
+	for i, c := range palette {
+		cr, cg, cb, _ := c.RGBA()
+		dr := tr - cr
+		dg := tg - cg
+		db := tb - cb
+		dist := dr*dr + dg*dg + db*db
+		if dist < bestDist {
+			bestDist = dist
+			best = uint8(i)
+		}
+	}
+	return best
+}
+
 func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer draw.Transformer, palette []color.Color, alignToPixels bool) {
 	var dst draw.Image
 	bounds := im.Bounds()
 
-	if len(palette) > 0 {
-		// Render text to a clean black/white Paletted image
-		paletted := image.NewPaletted(bounds, palette)
-		dst = paletted
-	} else {
-		dst = im
-	}
+	// Always draw to an intermediate RGBA image
+	rgba := image.NewRGBA(bounds)
+	dst = rgba
 
 	d := &font.Drawer{
 		Dst:  dst,
@@ -753,7 +768,30 @@ func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer
 	}
 
 	if len(palette) > 0 {
-		draw.Draw(im, bounds, dst, image.Point{}, draw.Over)
+		// Step: convert RGBA result to palette with hard thresholding
+		thresholded := image.NewPaletted(bounds, palette)
+		fgIndex := findClosestPaletteIndex(dc.color, palette)
+
+		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
+			for x := bounds.Min.X; x < bounds.Max.X; x++ {
+				_, _, _, a := rgba.At(x, y).RGBA()
+				if a > 0x8000 {
+					// Foreground pixel (text)
+					thresholded.SetColorIndex(x, y, fgIndex)
+				} else {
+					// Background pixel — pull from the existing image
+					bg := im.At(x, y)
+					bgIndex := findClosestPaletteIndex(bg, palette)
+					thresholded.SetColorIndex(x, y, bgIndex)
+				}
+			}
+		}
+
+		// Draw the thresholded result back to your target image
+		draw.Draw(im, bounds, thresholded, image.Point{}, draw.Src)
+	} else {
+		// If no palette, draw the RGBA result directly
+		draw.Draw(im, bounds, rgba, image.Point{}, draw.Over)
 	}
 }
 
