@@ -772,17 +772,17 @@ func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer
 		thresholded := image.NewPaletted(bounds, palette)
 		fgIndex := findClosestPaletteIndex(dc.color, palette)
 
-		for y := bounds.Min.Y; y < bounds.Max.Y; y++ {
-			for x := bounds.Min.X; x < bounds.Max.X; x++ {
-				_, _, _, a := rgba.At(x, y).RGBA()
-				if a > 0x8000 {
-					// Foreground pixel (text)
-					thresholded.SetColorIndex(x, y, fgIndex)
+		alphaThreshold := uint32(0xC000)
+
+		for py := bounds.Min.Y; py < bounds.Max.Y; py++ {
+			for px := bounds.Min.X; px < bounds.Max.X; px++ {
+				_, _, _, a := rgba.At(px, py).RGBA()
+				if a >= alphaThreshold {
+					thresholded.SetColorIndex(px, py, fgIndex)
 				} else {
-					// Background pixel — pull from the existing image
-					bg := im.At(x, y)
+					bg := im.At(px, py)
 					bgIndex := findClosestPaletteIndex(bg, palette)
-					thresholded.SetColorIndex(x, y, bgIndex)
+					thresholded.SetColorIndex(px, py, bgIndex)
 				}
 			}
 		}
