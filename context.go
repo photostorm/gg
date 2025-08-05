@@ -770,23 +770,28 @@ func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer
 	if len(palette) > 0 {
 		// Step: convert RGBA result to palette with hard thresholding
 		thresholded := image.NewPaletted(bounds, palette)
-		fgIndex := findClosestPaletteIndex(dc.color, palette)
-
-		alphaThreshold := uint32(0xC000)
 
 		for py := bounds.Min.Y; py < bounds.Max.Y; py++ {
 			for px := bounds.Min.X; px < bounds.Max.X; px++ {
-				_, _, _, a := rgba.At(px, py).RGBA()
-				if a >= alphaThreshold {
-					thresholded.SetColorIndex(px, py, fgIndex)
-				} else {
+				r, g, b, a := rgba.At(px, py).RGBA()
+				if a == 0 {
+					// Fully transparent: use bg
 					bg := im.At(px, py)
 					bgIndex := findClosestPaletteIndex(bg, palette)
 					thresholded.SetColorIndex(px, py, bgIndex)
+				} else {
+					// Fully or partially drawn: use color quantization by RGB
+					col := color.RGBA{
+						uint8(r >> 8),
+						uint8(g >> 8),
+						uint8(b >> 8),
+						255,
+					}
+					thresholded.SetColorIndex(px, py, findClosestPaletteIndex(col, palette))
 				}
 			}
 		}
-
+		
 		// Draw the thresholded result back to your target image
 		draw.Draw(im, bounds, thresholded, image.Point{}, draw.Src)
 	} else {
