@@ -18,7 +18,7 @@ import (
 	"golang.org/x/image/math/f64"
 )
 
-type PixelQuantizeFunc func(r, g, b, a uint32, bg color.Color, palette []color.Color) uint8
+type FontRenderPostProcessor func(src image.Image, bounds image.Rectangle) (image.Image, draw.Op)
 
 type LineCap int
 
@@ -56,30 +56,30 @@ var (
 )
 
 type Context struct {
-	width         int
-	height        int
-	rasterizer    *raster.Rasterizer
-	im            *image.RGBA
-	mask          *image.Alpha
-	color         color.Color
-	fillPattern   Pattern
-	strokePattern Pattern
-	strokePath    raster.Path
-	fillPath      raster.Path
-	start         Point
-	current       Point
-	hasCurrent    bool
-	dashes        []float64
-	dashOffset    float64
-	lineWidth     float64
-	lineCap       LineCap
-	lineJoin      LineJoin
-	fillRule      FillRule
-	fontFace      font.Face
-	fontHeight    float64
-	matrix        Matrix
-	stack         []*Context
-	quantizer     PixelQuantizeFunc
+	width               int
+	height              int
+	rasterizer          *raster.Rasterizer
+	im                  *image.RGBA
+	mask                *image.Alpha
+	color               color.Color
+	fillPattern         Pattern
+	strokePattern       Pattern
+	strokePath          raster.Path
+	fillPath            raster.Path
+	start               Point
+	current             Point
+	hasCurrent          bool
+	dashes              []float64
+	dashOffset          float64
+	lineWidth           float64
+	lineCap             LineCap
+	lineJoin            LineJoin
+	fillRule            FillRule
+	fontFace            font.Face
+	fontHeight          float64
+	matrix              Matrix
+	stack               []*Context
+	fontPostProcessFunc FontRenderPostProcessor
 }
 
 // NewContext creates a new image.RGBA with the specified width and height
@@ -509,12 +509,12 @@ func (dc *Context) ClipPreserve() {
 	}
 }
 
-func (dc *Context) SetQuantizerFunc(quantizer PixelQuantizeFunc) {
-	dc.quantizer = quantizer
+func (dc *Context) SetFontPostProcessFunc(fontPostProcessFunc FontRenderPostProcessor) {
+	dc.fontPostProcessFunc = fontPostProcessFunc
 }
 
-func (dc *Context) ClearQuantizerFunc() {
-	dc.quantizer = nil
+func (dc *Context) ClearFontPostProcessFunc() {
+	dc.fontPostProcessFunc = nil
 }
 
 // SetMask allows you to directly set the *image.Alpha to be used as a clipping
@@ -738,12 +738,10 @@ func findClosestPaletteIndex(target color.Color, palette []color.Color) uint8 {
 }
 
 func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer draw.Transformer, palette []color.Color, alignToPixels bool) {
-	var dst draw.Image
 	bounds := im.Bounds()
 
 	// Always draw to an intermediate RGBA image
-	rgba := image.NewRGBA(bounds)
-	dst = rgba
+	dst := image.NewRGBA(bounds)
 
 	d := &font.Drawer{
 		Dst:  dst,
@@ -778,21 +776,14 @@ func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer
 		prevC = c
 	}
 
-	if len(palette) > 0 && dc.quantizer != nil {
-		// Use callback to quantize each pixel
-		thresholded := image.NewPaletted(bounds, palette)
-		for py := bounds.Min.Y; py < bounds.Max.Y; py++ {
-			for px := bounds.Min.X; px < bounds.Max.X; px++ {
-				r, g, b, a := rgba.At(px, py).RGBA()
-				bg := im.At(px, py)
-				index := dc.quantizer(r, g, b, a, bg, palette)
-				thresholded.SetColorIndex(px, py, index)
-			}
-		}
-		draw.Draw(im, bounds, thresholded, image.Point{}, draw.Src)
+	if dc.fontPostProcessFunc != nil {
+		// Step 2: Call your custom postprocessor to prepare final image
+		final, drawOP := dc.fontPostProcessFunc(dst, bounds)
+
+		// Step 3: Draw to image
+		draw.Draw(im, bounds, final, image.Point{}, drawOP)
 	} else {
-		// No palette, draw directly
-		draw.Draw(im, bounds, rgba, image.Point{}, draw.Over)
+		draw.Draw(im, bounds, dst, image.Point{}, draw.Over)
 	}
 }
 
