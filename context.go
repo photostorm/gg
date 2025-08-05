@@ -18,6 +18,8 @@ import (
 	"golang.org/x/image/math/f64"
 )
 
+type PixelQuantizeFunc func(r, g, b, a uint32, bg color.Color, palette []color.Color) uint8
+
 type LineCap int
 
 const (
@@ -77,6 +79,7 @@ type Context struct {
 	fontHeight    float64
 	matrix        Matrix
 	stack         []*Context
+	quantizer     PixelQuantizeFunc
 }
 
 // NewContext creates a new image.RGBA with the specified width and height
@@ -506,6 +509,14 @@ func (dc *Context) ClipPreserve() {
 	}
 }
 
+func (dc *Context) SetQuantizerFunc(quantizer PixelQuantizeFunc) {
+	dc.quantizer = quantizer
+}
+
+func (dc *Context) ClearQuantizerFunc() {
+	dc.quantizer = nil
+}
+
 // SetMask allows you to directly set the *image.Alpha to be used as a clipping
 // mask. It must be the same size as the context, else an error is returned
 // and the mask is unchanged.
@@ -767,35 +778,20 @@ func (dc *Context) drawString(im draw.Image, s string, x, y float64, transformer
 		prevC = c
 	}
 
-	if len(palette) > 0 {
-		// Step: convert RGBA result to palette with hard thresholding
+	if len(palette) > 0 && dc.quantizer != nil {
+		// Use callback to quantize each pixel
 		thresholded := image.NewPaletted(bounds, palette)
-
 		for py := bounds.Min.Y; py < bounds.Max.Y; py++ {
 			for px := bounds.Min.X; px < bounds.Max.X; px++ {
 				r, g, b, a := rgba.At(px, py).RGBA()
-				if a == 0 {
-					// Fully transparent: use bg
-					bg := im.At(px, py)
-					bgIndex := findClosestPaletteIndex(bg, palette)
-					thresholded.SetColorIndex(px, py, bgIndex)
-				} else {
-					// Fully or partially drawn: use color quantization by RGB
-					col := color.RGBA{
-						uint8(r >> 8),
-						uint8(g >> 8),
-						uint8(b >> 8),
-						255,
-					}
-					thresholded.SetColorIndex(px, py, findClosestPaletteIndex(col, palette))
-				}
+				bg := im.At(px, py)
+				index := dc.quantizer(r, g, b, a, bg, palette)
+				thresholded.SetColorIndex(px, py, index)
 			}
 		}
-		
-		// Draw the thresholded result back to your target image
 		draw.Draw(im, bounds, thresholded, image.Point{}, draw.Src)
 	} else {
-		// If no palette, draw the RGBA result directly
+		// No palette, draw directly
 		draw.Draw(im, bounds, rgba, image.Point{}, draw.Over)
 	}
 }
